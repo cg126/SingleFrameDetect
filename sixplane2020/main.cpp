@@ -1,17 +1,17 @@
 #include<opencv2\highgui\highgui.hpp>
 #include<opencv2\opencv.hpp>
-#include<opencv2\core.hpp>//一般定义MAT等数据类型
+#include<opencv2\core.hpp>	// 一般定义MAT等数据类型
 #include<iostream>
 #include<fstream>
 #include<algorithm >
 
-using namespace std;//声明std的空间
-using namespace cv;//省去函数前面的cv
+using namespace std;		// 声明std的空间
+using namespace cv;			// 省去函数前面的cv
 
 struct row_roi
 {
 	int angle;
-	int roi;
+	int roi;	// 极坐标极径
 };
 
 struct Point2D
@@ -61,9 +61,9 @@ void main()
 	Mat src;
 	Mat outImage;
 
-	for (int a = 1; a < 400; a++)//while (!stop)
+	for (int a = 1; a < 400; a++)		// while (!stop)
 	{
-		double t1 = (double)cvGetTickCount();//计时
+		double t1 = (double)cvGetTickCount();	// 计时
 		/*frameNum++;
 		if (!capture.read(src))
 		{
@@ -73,8 +73,9 @@ void main()
 		//path = "C:\\Users\\Axis\\Desktop\\2020六旋翼修改相关材料\\所有裁剪输出\\" + to_string(a);
 		//path = "C:\\Users\\Axis\\Desktop\\2020六旋翼修改相关材料\\2000-2500裁剪输出\\" + to_string(a);
 		//name = path + ".jpg";
-		name = "3六旋翼目标(远近效果).png";
+		//name = "3六旋翼目标(远近效果).png";
 		name = "../resources/融合左.png";
+		//name = "../resources/图片4.1左.png";
 		if (a == 1)
 		{
 			src = imread(name);
@@ -84,7 +85,7 @@ void main()
 		if (a == 2 || a == 3)
 		{
 			src = imread(name);
-			outImage = outImage;
+			outImage = outImage;		// 继续处理outImage
 		}
 
 		//imshow("1", src);
@@ -106,21 +107,29 @@ void main()
 			{
 				img0[i*width + j] = greyFrame.at<uchar>(i, j);
 			}
+
 		//quickFindTarget2(greyFrame, height, width, &centery, &centerx, &greyaverage);
-		quickFindTarget1(img0, height, width, &centery, &centerx, &greyaverage);  //centerx是col号  ， centery是row号
-		//quickFindTarget(img0, height, width, &centery, &centerx, &greyaverage);  //centerx是col号  ， centery是row号
+		//quickFindTarget1(img0, height, width, &centery, &centerx, &greyaverage);  //centerx是col号  ， centery是row号
+		quickFindTarget(img0, height, width, &centery, &centerx, &greyaverage);  //centerx是col号  ， centery是row号
 		//靠近
-		if (a == 4)
+
+		if (a == 1)
 		{
 			/*centerx = 314 - 11;
 			centery = 229 - 11;*/
-			centerx = 300;  //357
-			centery = 258;  //190
 
-			centerx = 400;
-			centery = 143;
+			// 融合图左的无人机中心点位置
+			centerx = 128;  //357
+			centery = 352;  //190
 
-		}else if (a==2)
+			// 第四组红外左视图
+			//centerx = 99;
+			//centery = 312;
+
+			//centerx = 400;
+			//centery = 143;
+
+		}/*else if (a==2)
 		{
 			 centerx = 281 - 2;
 			 centery = 170 - 7;
@@ -129,7 +138,7 @@ void main()
 		{
 			centerx = 361 - 5;
 			centery = 247 - 9;
-		}
+		}*/
 
 		//有干扰情况
 		/*if (a == 1)
@@ -156,7 +165,7 @@ void main()
 		}*/
 
 		//有远近效果
-		if (a == 1)
+		/*if (a == 1)
 		{
 			centery = 216;
 			centerx = 306;
@@ -170,8 +179,7 @@ void main()
 		{
 			centery = 113;
 			centerx = 535;
-		}
-
+		}*/
 
 		//memset(img2out, 0, 640 * 480 * sizeof(unsigned char));
 		//二值化
@@ -192,14 +200,14 @@ void main()
 		//			img2out[i * width + j] = 0;
 		//	}
 
-		Mat image2;
+		Mat image2;		// 
+		
 		//Mat image1(height, width, CV_8UC1);
 		//cvtColor(image1, image1, CV_GRAY2RGB);
 
 		/*for (int i = 0; i < 480; i++)
 			for (int j = 0; j < 640; j++)
 				image1.at<uchar>(i, j) = img2out[i * 640 + j];*/
-
 
 		cvtColor(greyFrame, image2, CV_GRAY2RGB);
 		for (int i = -2; i <= 2; i++)
@@ -241,15 +249,15 @@ void main()
 
 		//imwrite("六旋翼投影区域图.jpg",image2);
 
-
 		int **t = new int*[360 / ergodic];
 
 		int roi = floor(sqrt(boxwidth * boxwidth + boxheight * boxheight)) / 2;
 
-		roi = 100;
+		roi = 24;
+		//roi = 20;
 
 		//0629修改两无人机靠近的实验
-		if (a == 1)
+		/*if (a == 1)
 		{
 			roi = 52 ;    
 		}
@@ -260,7 +268,7 @@ void main()
 		else if (a == 3)
 		{
 			roi = 52;
-		}
+		}*/
 
 		for (int i = 0; i < 360 / ergodic; ++i)
 		{
@@ -272,9 +280,9 @@ void main()
 
 		//////////////////////////极坐标转换///////////////////////
 
-		for (int th = 0; th < 360; th = th + ergodic)      //th以圆点360度遍历
+		for (int th = 0; th < 360; th = th + ergodic)		// th以圆点360度遍历
 		{
-			for (int r = 1; r < roi; r++)  //在th角度上以距离r遍历
+			for (int r = 1; r < roi; r++)					// 在th角度上以距离r遍历
 			{
 
 				the = th*3.14159 / 180;
@@ -341,11 +349,8 @@ void main()
 								temp_y = floor(y);
 							}
 							t[th / ergodic][r] = greyFrame.at<uchar>(temp_y, temp_x);
-
 						}
 					}
-
-
 					// t[th/ergodic][r]=image.at<uchar>(y1,x1);  
 				}
 			}
@@ -354,7 +359,6 @@ void main()
 		
 		//2021/07/18存储圆形区域
 		imwrite(".\\新数据中间结果\\极坐标转换区域.jpg", image2);
-
 
 
 		//////////////////////极坐标图像显示//////////////////////////
@@ -377,11 +381,12 @@ void main()
 		Mat img1;
 		img1.create(imgg.size(), imgg.type());
 
-		int thre = 0;
+		int thre = 0;		// 二值分割的阈值
 
 		//KittlerMinError(imgg, img1, imgg.cols, imgg.rows, &thre);
 		thre = Otsu(imgg);
-		threshold(imgg, img1, thre, 255, CV_THRESH_BINARY);  //CV_THRESH_BINARY：大于阈值thre部分设置为255，小于阈值部分被设为0
+		//thre = 200;
+		threshold(imgg, img1, thre, 255, CV_THRESH_BINARY);  // CV_THRESH_BINARY：大于阈值thre部分设置为255，小于阈值部分被设为0
 
 		/*Mat temp_mat;
 		temp_mat.create(greyFrame.size(), greyFrame.type());
@@ -415,16 +420,14 @@ void main()
 		}
 		////////////////////////边缘提取///////////////////////////////
 
-		Mat img22;
+		Mat img22;			// 存储边缘提取结果
 		img22.create(imgg.size(), imgg.type());
 		for (int i = 0; i < 360 / ergodic; i++)
 		{
 			for (int j = 1; j < roi; j++)
 			{
 				img22.at<uchar>(j, i) = 0;
-
 			}
-
 		}
 		for (int i = 0; i < 360 / ergodic; i++)
 		{
@@ -456,16 +459,17 @@ void main()
 		////...还原各角度对应边界的原像素坐标
 
 
-		//记下个角度对应边界数据
+		// 记下个角度对应边界数据
 		ofstream outfile1(".\\新数据中间结果\\边界数据.txt");
 		for (int i = 0; i < 360 / ergodic; i++)
 		{
 			outfile1 << i + 20 << "	" << m[i + 20] << endl;
 		}
 
-		MedFilterImage();     //边缘信息均值滤波
+		MedFilterImage();		// 边缘信息均值滤波
 
-								//////////////////////目标边缘信息显示，存入img2中显示//////////////////
+
+		//////////////////////目标边缘信息显示，存入img2中显示//////////////////
 		for (int i = 0; i < 360 / ergodic; i++)
 		{
 			for (int j = 1; j < roi; j++)
@@ -529,7 +533,7 @@ void main()
 		//line(outImage, Point(point_x - 10, point_y), Point(point_x + 10, point_y), Scalar(0, 0, 255), 1, CV_AA);
 		//line(outImage, Point(point_x, point_y - 10), Point(point_x, point_y + 10), Scalar(0, 0, 255), 1, CV_AA);
 
-		//标记要害点(机翼和起落架)
+		// 标记要害点(机翼和起落架)
 		for (int m = 0; m < p_target.size(); m++)
 		{
 
@@ -539,7 +543,7 @@ void main()
 			//line(outImage, Point(point_x - 10, point_y), Point(point_x + 10, point_y), Scalar(0, 0, 255), 1, CV_AA);
 			//line(outImage, Point(point_x, point_y - 10), Point(point_x, point_y + 10), Scalar(0, 0, 255), 1, CV_AA);
 
-			//三架无人机靠近的要害点标记
+			// 三架无人机靠近的要害点标记
 			
 			if (a == 1 || a == 2)
 			{
@@ -548,16 +552,16 @@ void main()
 					int point_x, point_y;
 					point_x = centerx + p_target[m].roi * (cos(p_target[m].angle * 3.14159 / 180)); //col
 					point_y = centery - p_target[m].roi * (sin(p_target[m].angle * 3.14159 / 180)) - 3;
-					line(outImage, Point(point_x - 10, point_y), Point(point_x + 10, point_y), Scalar(0, 0, 255), 1, CV_AA);
-					line(outImage, Point(point_x, point_y - 10), Point(point_x, point_y + 10), Scalar(0, 0, 255), 1, CV_AA);
+					line(outImage, Point(point_x - 5, point_y), Point(point_x + 5, point_y), Scalar(0, 0, 255), 1, CV_AA);
+					line(outImage, Point(point_x, point_y - 5), Point(point_x, point_y + 5), Scalar(0, 0, 255), 1, CV_AA);
 				}
 				if (m == 1)
 				{
 					int point_x, point_y;
 					point_x = centerx + p_target[m].roi * (cos(p_target[m].angle * 3.14159 / 180)); //col
 					point_y = centery - p_target[m].roi * (sin(p_target[m].angle * 3.14159 / 180));
-					line(outImage, Point(point_x - 10, point_y), Point(point_x + 10, point_y), Scalar(0, 0, 255), 1, CV_AA);
-					line(outImage, Point(point_x, point_y - 10), Point(point_x, point_y + 10), Scalar(0, 0, 255), 1, CV_AA);
+					line(outImage, Point(point_x - 5, point_y), Point(point_x + 5, point_y), Scalar(0, 0, 255), 1, CV_AA);
+					line(outImage, Point(point_x, point_y - 5), Point(point_x, point_y + 5), Scalar(0, 0, 255), 1, CV_AA);
 				}
 			}
 			if (a == 3)
@@ -567,8 +571,8 @@ void main()
 					int point_x, point_y;
 					point_x = centerx + p_target[m].roi * (cos(p_target[m].angle * 3.14159 / 180)); //col
 					point_y = centery - p_target[m].roi * (sin(p_target[m].angle * 3.14159 / 180));
-					line(outImage, Point(point_x - 10, point_y), Point(point_x + 10, point_y), Scalar(0, 0, 255), 1, CV_AA);
-					line(outImage, Point(point_x, point_y - 10), Point(point_x, point_y + 10), Scalar(0, 0, 255), 1, CV_AA);
+					line(outImage, Point(point_x - 5, point_y), Point(point_x + 5, point_y), Scalar(0, 0, 255), 1, CV_AA);
+					line(outImage, Point(point_x, point_y - 5), Point(point_x, point_y + 5), Scalar(0, 0, 255), 1, CV_AA);
 				}
 			}
 
@@ -607,9 +611,9 @@ void main()
 			//}
 		}
 
-		//标记中心点
-		line(outImage, Point(centerx - 10, centery), Point(centerx + 10, centery), Scalar(0, 255, 255), 1, CV_AA);
-		line(outImage, Point(centerx, centery - 10), Point(centerx, centery + 10), Scalar(0, 255, 255), 1, CV_AA);
+		// 标记中心点
+		line(outImage, Point(centerx - 5, centery), Point(centerx + 5, centery), Scalar(0, 255, 255), 1, CV_AA);
+		line(outImage, Point(centerx, centery - 5), Point(centerx, centery + 5), Scalar(0, 255, 255), 1, CV_AA);
 		/*for (int i = -2; i <= 2; i++)
 			for (int j = -2; j <= 2; j++)
 			{
@@ -637,19 +641,19 @@ void quickFindTarget(unsigned char *img0, int height, int width, int *centerx, i
 {
 	const int w = width;
 	const int h = height;
-	float sumrows[480] = { 0 };
+	/*float sumrows[480] = { 0 };
 	float sumrows1[480] = { 0 };
 	float sumrows2[480] = { 0 };
 	float sumcols[640] = { 0 };
 	float sumcols1[640] = { 0 };
-	float sumcols2[640] = { 0 };
+	float sumcols2[640] = { 0 };*/
 
-	/*float sumrows[488] = { 0 };
+	float sumrows[488] = { 0 };
 	float sumrows1[488] = { 0 };
 	float sumrows2[488] = { 0 };
 	float sumcols[648] = { 0 };
 	float sumcols1[648] = { 0 };
-	float sumcols2[648] = { 0 };*/
+	float sumcols2[648] = { 0 };
 	int i = 0, j = 0;
 	int pointx = 0, pointy = 0;
 
@@ -666,15 +670,15 @@ void quickFindTarget(unsigned char *img0, int height, int width, int *centerx, i
 	sumrows[2] = sumrows[5];
 	sumrows[3] = sumrows[5];
 
-	//sumrows[484] = sumrows[483];
-	//sumrows[485] = sumrows[483];
-	//sumrows[486] = sumrows[483];
-	//sumrows[487] = sumrows[483];
+	sumrows[484] = sumrows[483];
+	sumrows[485] = sumrows[483];
+	sumrows[486] = sumrows[483];
+	sumrows[487] = sumrows[483];
 
-	sumrows[476] = sumrows[475];
+	/*sumrows[476] = sumrows[475];
 	sumrows[477] = sumrows[475];
 	sumrows[478] = sumrows[475];
-	sumrows[479] = sumrows[475];
+	sumrows[479] = sumrows[475];*/
 
 	memcpy(sumrows1, sumrows, height * sizeof(float));
 	memcpy(sumrows2, sumrows, height * sizeof(float));
@@ -765,15 +769,15 @@ void quickFindTarget(unsigned char *img0, int height, int width, int *centerx, i
 	sumcols[2] = sumcols[5];
 	sumcols[3] = sumcols[5];
 
-	//sumcols[644] = sumcols[643];
-	//sumcols[645] = sumcols[643];
-	//sumcols[646] = sumcols[643];
-	//sumcols[647] = sumcols[643];
+	sumcols[644] = sumcols[643];
+	sumcols[645] = sumcols[643];
+	sumcols[646] = sumcols[643];
+	sumcols[647] = sumcols[643];
 
-	sumcols[636] = sumcols[635];
+	/*sumcols[636] = sumcols[635];
 	sumcols[637] = sumcols[635];
 	sumcols[638] = sumcols[635];
-	sumcols[639] = sumcols[635];
+	sumcols[639] = sumcols[635];*/
 
 	memcpy(sumcols1, sumcols, width * sizeof(float));
 	memcpy(sumcols2, sumcols, width * sizeof(float));
@@ -1059,8 +1063,6 @@ void quickFindTarget1(unsigned char *img0, int height, int width, int *centerx, 
 	}
 	else
 	{
-
-
 		int i, j;
 		if (*centerx < 140) { *centerx = 140; }//140=120+20
 		else if (*centerx > 340) { *centerx = 340; }
@@ -1090,13 +1092,11 @@ void quickFindTarget1(unsigned char *img0, int height, int width, int *centerx, 
 			*centerx = 240;
 			*centery = 320;
 		}
-
 	}
 }
 
 void KittlerMinError(const Mat& inimg, Mat& outimg, int width, int height, int *th)
 {
-
 	//	   double time=0;  
 	//    double counts=0;  
 	//    LARGE_INTEGER nFreq;  
@@ -1648,17 +1648,14 @@ void quickFindTarget2(Mat&src, int height, int width, int *centerx, int *centery
 	}
 
 	float data[24 * 32] = { 0 };
-	int target[40][2] = { 0 };//目标像素
+	int target[40][2] = { 0 };			// 目标像素
 	int i = 0, j = 0;
-
-
 
 	for (i = 0; i < 24; i++)
 		for (j = 0; j < 32; j++)
 		{
 			data[i * 32 + j] = (float)img0[i * 20 * width + j * 20];
 		}
-
 
 	int count = -1;
 
@@ -1700,8 +1697,6 @@ void quickFindTarget2(Mat&src, int height, int width, int *centerx, int *centery
 	}
 	else
 		*greyaverage = 150;
-
-
 
 	if (runtimes == 1)
 	{
