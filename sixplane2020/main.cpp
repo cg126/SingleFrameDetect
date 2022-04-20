@@ -20,7 +20,7 @@ struct Point2D
 	int y;
 };
 
-int ergodic = 1;
+int ergodic = 1;		// 
 int m[401] = { 0 };
 int n[401] = { 0 };
 double TH[401] = { 0 };
@@ -40,6 +40,8 @@ void mid(int k, int*max);
 vector<int> Max_Cur(int n);
 vector<row_roi> FindTarget(vector<int> &cur);
 static int frameNum = 0;
+
+
 void main()
 {
 	//string str = "C:\\sixrotor1.avi";//"sixrotor1.avi";
@@ -61,7 +63,7 @@ void main()
 	Mat src;
 	Mat outImage;
 
-	for (int a = 1; a < 400; a++)		// while (!stop)
+	for (int a = 1; a < 2; a++)		// while (!stop)
 	{
 		double t1 = (double)cvGetTickCount();	// 计时
 		/*frameNum++;
@@ -75,7 +77,7 @@ void main()
 		//name = path + ".jpg";
 		//name = "3六旋翼目标(远近效果).png";
 		name = "../resources/融合左.png";
-		//name = "../resources/图片4.1左.png";
+		name = "../resources/图片4.1左.png";
 		if (a == 1)
 		{
 			src = imread(name);
@@ -119,17 +121,18 @@ void main()
 			centery = 229 - 11;*/
 
 			// 融合图左的无人机中心点位置
-			centerx = 128;  //357
-			centery = 352;  //190
+			//centerx = 128;  //357
+			//centery = 352;  //190
 
 			// 第四组红外左视图
-			//centerx = 99;
-			//centery = 312;
+			centerx = 99;
+			centery = 312;
 
 			//centerx = 400;
 			//centery = 143;
 
-		}/*else if (a==2)
+		}
+		/*else if (a==2)
 		{
 			 centerx = 281 - 2;
 			 centery = 170 - 7;
@@ -253,10 +256,10 @@ void main()
 
 		int roi = floor(sqrt(boxwidth * boxwidth + boxheight * boxheight)) / 2;
 
-		roi = 24;
-		//roi = 20;
+		//roi = 24;
+		roi = 20;
 
-		//0629修改两无人机靠近的实验
+		// 0629修改两无人机靠近的实验
 		/*if (a == 1)
 		{
 			roi = 52 ;    
@@ -362,7 +365,7 @@ void main()
 
 
 		//////////////////////极坐标图像显示//////////////////////////
-		Mat imgg;
+		Mat imgg;			// 存储极坐标图像
 		resize(greyFrame, imgg, Size(360 / ergodic, roi));
 		for (int i = 0; i < 360 / ergodic; i = i++)
 		{
@@ -385,26 +388,46 @@ void main()
 
 		//KittlerMinError(imgg, img1, imgg.cols, imgg.rows, &thre);
 		thre = Otsu(imgg);
-		//thre = 200;
+		thre = 200;
 		threshold(imgg, img1, thre, 255, CV_THRESH_BINARY);  // CV_THRESH_BINARY：大于阈值thre部分设置为255，小于阈值部分被设为0
 
 		/*Mat temp_mat;
 		temp_mat.create(greyFrame.size(), greyFrame.type());
 		threshold(greyFrame, temp_mat, thre, 255, CV_THRESH_BINARY);*/
 		imwrite(".\\新数据中间结果\\二值图.jpg", img1);
-		/////////////////////极坐标图像分割，存入img1///////////////////
 
 		//Canny边缘检测
 		//Canny(img1,img1,9,3);
 		//img1 = imread("result.bmp", 0);
-		/////////////边缘提取(边缘信息存入m数组里，前后各扩充20个数据，方便后续处理数据)//////////////
-		Mat img2;
+
+		// 边缘提取(边缘信息存入m数组里，前后各扩充20个数据，方便后续处理数据)
+		Mat img2;			// 存储边缘提取后的拟合图像
 		img2.create(imgg.size(), imgg.type());
+		// 边缘提取（可见光图像）
+		//for (int th = 0; th < 360 / ergodic; th = th++)
+		//{
+		//	for (int r = roi - 1; r > 0; r--)	// 极坐标图中从下往上遍历
+		//	{
+		//		if (img1.at<uchar>(r, th) == 0)
+		//		{
+		//			m[th + 20] = r;
+		//			// cout<<m[th+4]<<endl;
+		//			break;
+		//		}
+		//	}
+		//}
+		//for (int i = 0; i < 20; i++)
+		//{
+		//	m[(360 / ergodic) + 20 + i] = m[20 + i];
+		//	m[0 + i] = m[360 / ergodic + i];
+		//}
+
+		// 边缘提取（红外图像）
 		for (int th = 0; th < 360 / ergodic; th = th++)
 		{
-			for (int r = roi - 1; r > 0; r--)
+			for (int r = roi - 1; r > 0; r--)	// 极坐标图中从下往上遍历
 			{
-				if (img1.at<uchar>(r, th) == 0)
+				if (img1.at<uchar>(r, th) == 255)
 				{
 					m[th + 20] = r;
 					// cout<<m[th+4]<<endl;
@@ -412,16 +435,17 @@ void main()
 				}
 			}
 		}
-
 		for (int i = 0; i < 20; i++)
 		{
 			m[(360 / ergodic) + 20 + i] = m[20 + i];
 			m[0 + i] = m[360 / ergodic + i];
 		}
-		////////////////////////边缘提取///////////////////////////////
+
 
 		Mat img22;			// 存储边缘提取结果
 		img22.create(imgg.size(), imgg.type());
+
+		// 画出边缘
 		for (int i = 0; i < 360 / ergodic; i++)
 		{
 			for (int j = 1; j < roi; j++)
@@ -433,8 +457,7 @@ void main()
 		{
 			img22.at<uchar>(m[i + 20], i) = 255;
 		}
-
-		imwrite(".\\新数据中间结果\\极坐标各角度对应边界.jpg", img22);
+		imwrite(".\\新数据中间结果\\极坐标各角度对应边界.jpg", img22);		// 极坐标各角度对应边界，即边缘提取
 
 		//...还原各角度对应边界的原像素坐标
 		vector<int> y_pixel;
@@ -458,8 +481,7 @@ void main()
 		}
 		////...还原各角度对应边界的原像素坐标
 
-
-		// 记下个角度对应边界数据
+		// 记录各角度对应边界数据
 		ofstream outfile1(".\\新数据中间结果\\边界数据.txt");
 		for (int i = 0; i < 360 / ergodic; i++)
 		{
@@ -468,16 +490,13 @@ void main()
 
 		MedFilterImage();		// 边缘信息均值滤波
 
-
 		//////////////////////目标边缘信息显示，存入img2中显示//////////////////
 		for (int i = 0; i < 360 / ergodic; i++)
 		{
 			for (int j = 1; j < roi; j++)
 			{
 				img2.at<uchar>(j, i) = 0;
-
 			}
-
 		}
 
 		for (int i = 0; i < 360 / ergodic; i++)
@@ -491,14 +510,14 @@ void main()
 
 		//////////////////////目标边缘信息显示，存入img2中显示//////////////////
 
-		double t2 = (double)cvGetTickCount();//计时
-		cir();   //目标边缘曲率
+		double t2 = (double)cvGetTickCount();	// 计时
+		cir();		// 目标边缘曲率
 		t2 = ((double)cvGetTickCount() - t2) / (cvGetTickFrequency() * 1000);
 		//mid(6, &max);
 
-		//求目标点
+		// 求目标点
 		vector<int> cur;
-		cur = Max_Cur(8);
+		cur = Max_Cur(8);		// 寻找目标点候选点（曲率最大）
 
 		vector<row_roi> p_target;
 		p_target = FindTarget(cur);
@@ -536,7 +555,6 @@ void main()
 		// 标记要害点(机翼和起落架)
 		for (int m = 0; m < p_target.size(); m++)
 		{
-
 			//int point_x, point_y;
 			//point_x = centerx + p_target[m].roi * (cos(p_target[m].angle * 3.14159 / 180)); //col
 			//point_y = centery - p_target[m].roi * (sin(p_target[m].angle * 3.14159 / 180));
@@ -627,6 +645,7 @@ void main()
 		//imwrite("六旋翼干扰下目标标记(两侧机翼、机身).png",outImage);
 		t1 = ((double)cvGetTickCount() - t1) / (cvGetTickFrequency() * 1000);
 		cout << "第"<<a<<"帧图像处理时间: " << t2 << " ms" << endl;
+		system("pause");
 		waitKey(20);
 		free(img0);
 		if (a == 443)
@@ -758,7 +777,7 @@ void quickFindTarget(unsigned char *img0, int height, int width, int *centerx, i
 
 
 
-	/****************竖直投影*****************************/
+	/****************竖直投影****************/
 	for (i = 0; i<width; i++)//竖直投影
 		for (j = 0; j<height; j++)
 		{
@@ -1531,7 +1550,7 @@ void mid(int k, int*max)
 
 //2020_XK
 
-//寻找目标点候选点（曲率最大）
+// 寻找目标点候选点（曲率最大）
 vector<int> Max_Cur(int n)
 {
 	vector<int> cur;
@@ -1591,7 +1610,8 @@ vector<int> Max_Cur(int n)
 	return cur;
 }
 
-//确定目标点
+
+// 确定目标点
 vector<row_roi> FindTarget(vector<int> &cur)
 {
 	vector<row_roi> target_point;
